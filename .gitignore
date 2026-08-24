@@ -7,4 +7,5 @@ __pycache__/
 *.db-wal
 *.zip
 github_sync.py
+deploy_to_vps.py
 
