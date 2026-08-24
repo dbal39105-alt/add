@@ -9,4 +9,5 @@ __pycache__/
 github_sync.py
 deploy_to_vps.py
 restart_vps.py
+clean_kill_vps.py
 
