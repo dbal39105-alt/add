@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "regions": ["bom1"],
+  "functions": {
+    "api/webhook.py": {
+      "maxDuration": 60
+    },
+    "api/debug.py": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/debug",
+      "destination": "/api/debug.py"
+    },
+    {
+      "source": "/api/webhook",
+      "destination": "/api/webhook.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/webhook.py"
+    }
+  ]
+}
