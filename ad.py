@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8777443945:AAGM_f-WtydhbzRDZ1bgMt1X6ATu_oushHs")
 
 # ============== ANTI-CAPTCHA CONFIG ==============
-ANTI_CAPTCHA_KEY = "b05b20aabb26049c7c730cdbdd682153"
+ANTI_CAPTCHA_KEY = os.environ.get("ANTI_CAPTCHA_KEY", "b05b20aabb26049c7c730cdbdd682153")
 
 # ============== PROXY CONFIG (for UIDAI only) ==============
 # Live tested working Indian proxies for UIDAI access from Vercel
@@ -2479,6 +2479,29 @@ def main():
         print("\n[ stopped ]")
         os._exit(0)
     signal.signal(signal.SIGINT, _sigint)
+
+    def _start_health_server():
+        port = int(os.environ.get("PORT", 0))
+        if not port:
+            return
+        from http.server import HTTPServer, BaseHTTPRequestHandler
+        class HealthHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(b'{"status": "online", "service": "telegram-bot"}')
+            def log_message(self, format, *args):
+                pass
+        try:
+            server = HTTPServer(('0.0.0.0', port), HealthHandler)
+            hs_thread = threading.Thread(target=server.serve_forever, daemon=True)
+            hs_thread.start()
+            print(f"[ server ] Health server listening on 0.0.0.0:{port}")
+        except Exception as ex:
+            logger.warning(f"Health server failed on port {port}: {ex}")
+
+    _start_health_server()
 
     t = threading.Thread(target=_cleanup_sessions, daemon=True)
     t.start()
