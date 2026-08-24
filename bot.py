@@ -510,13 +510,15 @@ PLANS = {
     '500':  {'credits': 50,  'price': '₹9999',  'lifetime': False},
     '1000': {'credits': 0,   'price': '18999', 'lifetime': True},
 }
-CHANNEL_USERNAME = "-1002970304603"
-CHANNEL_NAME     = "Rahul APK Developer Information"
-CHANNEL_LINK     = "https://t.me/Aadhar_info"
+CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "-1004496818672")
+CHANNEL_NAME     = "Alix"
+CHANNEL_LINK     = "https://t.me/alixgidit"
 
 # ============== DATABASE ==============
-TEMP_DIR     = "/tmp" if os.environ.get("VERCEL") or os.path.exists("/tmp") else "."
-DB_FILE      = os.path.join(TEMP_DIR, "bot.db")
+if os.environ.get("VERCEL"):
+    DB_FILE = "/tmp/bot.db"
+else:
+    DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bot.db")
 _db_conn     = None
 _db_lock     = threading.Lock()
 _db_init_lk  = threading.Lock()
@@ -818,13 +820,16 @@ def _cleanup_sessions():
 
 # ============== CHANNEL MEMBERSHIP ==============
 def is_channel_member(user_id):
-    """
-    FIXED: Converts numerical chat ID correctly and safely verifies 
-    membership endpoints through Telegram infrastructure constraints.
-    """
     try:
-        # Dynamic identifier casting ensures no integer-to-string format drop
-        target_chat = int(CHANNEL_USERNAME) if CHANNEL_USERNAME.startswith("-100") or CHANNEL_USERNAME.isdigit() else CHANNEL_USERNAME
+        if str(user_id) == str(OWNER_ID):
+            return True
+        c_user = str(CHANNEL_USERNAME).strip()
+        if c_user.startswith("-100") or (c_user.startswith("-") and c_user[1:].isdigit()) or c_user.isdigit():
+            target_chat = int(c_user)
+        elif not c_user.startswith("@"):
+            target_chat = f"@{c_user}"
+        else:
+            target_chat = c_user
         
         response = get_telegram_session().get(
             f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getChatMember",
@@ -836,8 +841,8 @@ def is_channel_member(user_id):
             r = response.json()
             if r.get('ok'):
                 status = r['result']['status']
-                return status in ('member', 'administrator', 'creator')
-        logger.warning(f"Verification Check returned non-200 or failure layout: {response.text}")
+                return status in ('member', 'administrator', 'creator', 'restricted')
+        logger.warning(f"Verification Check returned: {response.text}")
     except Exception as e:
         logger.error(f"Channel check error: {e}")
     return False
