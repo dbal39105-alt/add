@@ -1,0 +1,10 @@
+.vercel
+.env
+__pycache__/
+*.pyc
+*.db
+*.db-shm
+*.db-wal
+*.zip
+github_sync.py
+
