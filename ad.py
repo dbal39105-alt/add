@@ -38,15 +38,23 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8777443945:AAGM_f-Wty
 ANTI_CAPTCHA_KEY = os.environ.get("ANTI_CAPTCHA_KEY", "b05b20aabb26049c7c730cdbdd682153")
 
 # ============== PROXY CONFIG (for UIDAI only) ==============
-# Live tested working Indian proxies for UIDAI access from Vercel
-INDIAN_PROXIES = [
+# Live tested working Indian proxies for UIDAI access
+DEFAULT_INDIAN_PROXIES = [
     "117.236.124.166:3128",
     "14.139.235.82:3128",
     "103.22.173.77:1111",
     "182.71.123.38:80",
     "14.143.83.222:1111",
     "103.135.70.9:8080",
+    "103.175.218.170:80",
+    "103.109.56.242:80",
 ]
+
+env_proxies = os.environ.get("INDIAN_PROXIES")
+if env_proxies:
+    INDIAN_PROXIES = [p.strip() for p in env_proxies.split(",") if p.strip()]
+else:
+    INDIAN_PROXIES = DEFAULT_INDIAN_PROXIES
 
 _proxy_index = 0
 
@@ -2486,9 +2494,8 @@ def main():
         if bot_info.get('ok'):
             _bot_username_val = bot_info['result']['username']
             global _bot_username
-            _bot_username = _bot_username_val
             print(f"[ online ]  @{_bot_username_val}")
-            print(f"[ network]  direct connection")
+            print(f"[ proxies]  Indian Proxy Pool ({len(INDIAN_PROXIES)} active for UIDAI)")
             print(f"[ cracker]  PyPDF2 / 4 threads")
             print(f"[ credits]  system active")
             print(f"[ owners ]  {OWNER_IDS}")
