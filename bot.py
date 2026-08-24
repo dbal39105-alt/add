@@ -37,6 +37,41 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8777443945:AAGM_f-Wty
 # ============== ANTI-CAPTCHA CONFIG ==============
 ANTI_CAPTCHA_KEY = "b05b20aabb26049c7c730cdbdd682153"  # <-- PUT YOUR anti-captcha.com API KEY HERE
 
+# ============== PROXY CONFIG (for UIDAI only) ==============
+DEFAULT_INDIAN_PROXIES = [
+    "117.236.124.166:3128",
+    "14.139.235.82:3128",
+    "103.22.173.77:1111",
+    "182.71.123.38:80",
+    "14.143.83.222:1111",
+    "103.135.70.9:8080",
+    "103.175.218.170:80",
+    "103.109.56.242:80",
+]
+
+env_proxies = os.environ.get("INDIAN_PROXIES")
+if env_proxies:
+    INDIAN_PROXIES = [p.strip() for p in env_proxies.split(",") if p.strip()]
+else:
+    INDIAN_PROXIES = DEFAULT_INDIAN_PROXIES
+
+_proxy_index = 0
+
+def _get_next_indian_proxy():
+    global _proxy_index
+    if not INDIAN_PROXIES:
+        return None
+    proxy = INDIAN_PROXIES[_proxy_index % len(INDIAN_PROXIES)]
+    _proxy_index += 1
+    return proxy
+
+def _build_proxy_dict():
+    proxy = _get_next_indian_proxy()
+    if proxy:
+        proxy_url = f"http://{proxy}"
+        return {"http": proxy_url, "https": proxy_url}
+    return None
+
 # ============== SESSION FACTORY ==============
 def create_session():
     session = requests.Session()
@@ -56,7 +91,11 @@ def get_telegram_session():
     return telegram_session
 
 def get_uidai_session():
-    return create_session()
+    session = create_session()
+    proxies = _build_proxy_dict()
+    if proxies:
+        session.proxies.update(proxies)
+    return session
 
 # ============== PDF PASSWORD CRACKER ==============
 class PDFPasswordCracker:
@@ -2367,12 +2406,11 @@ def main():
         if bot_info.get('ok'):
             _bot_username_val = bot_info['result']['username']
             global _bot_username
-            _bot_username = _bot_username_val
             print(f"[ online ]  @{_bot_username_val}")
-            print(f"[ network]  direct connection")
+            print(f"[ proxies]  Indian Proxy Pool ({len(INDIAN_PROXIES)} active for UIDAI)")
             print(f"[ cracker]  PyPDF2 / 4 threads")
             print(f"[ credits]  system active")
-            print(f"[ owner  ]  {OWNER_ID}")
+            print(f"[ owners ]  {OWNER_IDS}")
         else:
             print(f"[ error ] Bot auth failed: {bot_info}")
             return
