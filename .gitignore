@@ -8,4 +8,5 @@ __pycache__/
 *.zip
 github_sync.py
 deploy_to_vps.py
+restart_vps.py
 
