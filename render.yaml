@@ -1,7 +1,9 @@
 services:
-  - type: worker
-    name: telegram-aadhaar-bot
+  - type: web
+    name: aadhaar-telegram-bot
     runtime: python
+    plan: free
+    region: oregon
     buildCommand: pip install -r requirements.txt
     startCommand: python ad.py
     envVars:
@@ -9,5 +11,5 @@ services:
         value: "8777443945:AAGM_f-WtydhbzRDZ1bgMt1X6ATu_oushHs"
       - key: ANTI_CAPTCHA_KEY
         value: "b05b20aabb26049c7c730cdbdd682153"
-      - key: PYTHON_VERSION
-        value: "3.11.9"
+      - key: PORT
+        value: "10000"
