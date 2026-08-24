@@ -1,0 +1,12 @@
+[project]
+name = "telegram-bot"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.31.0",
+    "PyPDF2>=3.0.0",
+    "upstash-redis>=1.0.0",
+]
+
+[tool.vercel]
+entrypoint = "api.webhook:handler"
