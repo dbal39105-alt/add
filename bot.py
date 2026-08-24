@@ -500,9 +500,18 @@ def _captcha_failed(chat_id, message_id=None):
 # ============== CONFIG ==============
 DIVIDER         = "━━━━━━━━━━━━━━━━━━━━━━━"
 BOT_NAME        = "𝙍𝘼𝙃𝙐𝙇 𝘼𝘼𝘿𝙃𝘼𝙍 𝘽𝙊𝙏"
-OWNER_ID        = 8558196013
+OWNER_IDS       = [7477511589, 7823358687]
+OWNER_ID        = 7477511589
 OWNER_USERNAME  = "@SaitamaX_404"
 SESSION_TIMEOUT = 300
+
+def is_owner(user_id):
+    if not user_id:
+        return False
+    try:
+        return int(user_id) in OWNER_IDS or str(user_id) in [str(x) for x in OWNER_IDS]
+    except Exception:
+        return str(user_id) in [str(x) for x in OWNER_IDS]
 
 PLANS = {
     '100':  {'credits': 10,  'price': '₹2499',  'lifetime': False},
@@ -566,7 +575,7 @@ def _init_db():
     _init_settings_cache()
 
 def _migrate_from_json():
-    json_path = os.path.join(TEMP_DIR, 'users.json') if os.path.exists(os.path.join(TEMP_DIR, 'users.json')) else 'users.json'
+    json_path = 'users.json'
     if not os.path.exists(json_path):
         return
     conn = _get_db()
@@ -821,7 +830,7 @@ def _cleanup_sessions():
 # ============== CHANNEL MEMBERSHIP ==============
 def is_channel_member(user_id):
     try:
-        if str(user_id) == str(OWNER_ID):
+        if is_owner(user_id):
             return True
         c_user = str(CHANNEL_USERNAME).strip()
         if c_user.startswith("-100") or (c_user.startswith("-") and c_user[1:].isdigit()) or c_user.isdigit():
@@ -1384,7 +1393,7 @@ def handle_callback(chat_id, callback_query_id, data):
         return
 
     # ── ADMIN CALLBACKS ──────────────────────────────────────
-    if chat_id == OWNER_ID and data.startswith('adm_'):
+    if is_owner(chat_id) and data.startswith('adm_'):
         if data == 'adm_home':
             show_admin_home(chat_id)
             return
@@ -1592,7 +1601,7 @@ def handle_message(chat_id, message_text):
         )
         return
 
-    if chat_id != OWNER_ID and not is_channel_member(chat_id):
+    if not is_owner(chat_id) and not is_channel_member(chat_id):
         send_message(chat_id,
             f"<b>{BOT_NAME}</b>\n{DIVIDER}\n"
             f"<b>〔 Channel Required 〕</b>\n\n"
@@ -1603,12 +1612,12 @@ def handle_message(chat_id, message_text):
         )
         return
 
-    if chat_id == OWNER_ID and message_text.startswith('/'):
+    if is_owner(chat_id) and message_text.startswith('/'):
         if handle_admin_command(chat_id, message_text):
             return
 
     # ── ADMIN SESSION INPUT ───────────────────────────────────
-    if chat_id == OWNER_ID:
+    if is_owner(chat_id):
         s    = get_session(chat_id)
         step = s.get('step', 'main')
         sd   = s.get('data', {})
@@ -2312,7 +2321,7 @@ def _process_update(update):
                     ),
                     reply_markup=get_main_keyboard()
                 )
-            elif text.startswith('/admin') and cid == OWNER_ID:
+            elif text.startswith('/admin') and is_owner(cid):
                 handle_admin_command(cid, text)
             else:
                 handle_message(cid, text)
